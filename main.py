@@ -1,8 +1,10 @@
 from PyQt5 import QtWidgets
 from UI import Ui_MainWindow
 from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import QCoreApplication
 import configparser
 import requests
+import os
 
 class myUI:
     def __init__(self, Ui_MainWindow):
@@ -65,7 +67,8 @@ class myUI:
         streamer_name = self.ui.streamerEdit.text()
         line_api = self.ui.lineEdit.text()
 
-        if self.checkTwitch(client_id, client_secret):
+        checkTwitch = self.checkTwitch(client_id, client_secret)
+        if checkTwitch:
             config = configparser.ConfigParser()
             config['TWITCH'] = {
                 'client_id': client_id,
@@ -75,13 +78,17 @@ class myUI:
             with open('config.ini', 'w') as configfile:
                 config.write(configfile)
         
-        if self.checkLine(line_api):
+        checkLine = self.checkLine(line_api)
+        if checkLine:
             config = configparser.ConfigParser()
             config['LINE'] = {
                 'api': line_api,
             }
             with open('config.ini', 'a+') as configfile:
                 config.write(configfile)
+        if checkTwitch and checkLine:
+            self.MainWindow.close()
+            os.system("line_notify.exe")
 
     def ui_init(self):
         config = configparser.ConfigParser()
@@ -101,11 +108,7 @@ class myUI:
         
         self.ui.confirmBtn.clicked.connect(self.confirmClick)
 
-    def app_exec(self):
-        self.app.exec_()
-
 if __name__ == "__main__":
     ui = myUI(Ui_MainWindow)
     ui.ui_init()
-    ui.app_exec()
-    
+    ui.app.exec_()
